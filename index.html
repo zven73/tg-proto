@@ -21,7 +21,7 @@
   --txt:#fff;
   --txt2:#8E8E93;
   --pill:rgba(28,28,30,.92);
-  --sber:#21A038;
+  --sber:#107F8C;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%}
@@ -232,12 +232,40 @@ body{
 .orgcard .l{font-size:13px;color:#8b939d}
 .orgcard .v{font-size:16px;font-weight:600;margin-top:2px}
 .perm{display:flex;gap:12px;margin-bottom:14px;font-size:15px;line-height:1.35}
-.perm .ok{width:22px;height:22px;border-radius:50%;background:#e5f6e9;color:var(--sber);display:flex;align-items:center;justify-content:center;font-size:13px;flex:0 0 auto}
+.perm .ok{width:22px;height:22px;border-radius:50%;background:#e2f0f1;color:var(--sber);display:flex;align-items:center;justify-content:center;font-size:13px;flex:0 0 auto}
 .perm .no{width:22px;height:22px;border-radius:50%;background:#f2f4f6;color:#98a1ab;display:flex;align-items:center;justify-content:center;font-size:13px;flex:0 0 auto}
 .perm small{display:block;color:#8b939d;font-size:13px}
 .consent .foot{padding:0 20px}
 .consent .terms{font-size:12.5px;color:#98a1ab;line-height:1.4;margin:16px 0 0;text-align:center}
 .declinebtn{height:52px;border-radius:12px;background:#f2f4f6;color:#0f1114;display:flex;align-items:center;justify-content:center;font-size:17px;cursor:pointer;margin-top:10px}
+
+/* экран блокировки с пушем */
+.lock{position:absolute;inset:0;display:none;flex-direction:column;
+  background:radial-gradient(120% 80% at 50% 0%,#2a2036 0%,#171122 55%,#0a070f 100%)}
+.lock.active{display:flex}
+.lock .glow{position:absolute;inset:0;background:
+  radial-gradient(60% 40% at 20% 12%,rgba(120,90,200,.28),transparent 62%),
+  radial-gradient(55% 38% at 85% 78%,rgba(40,120,180,.22),transparent 60%)}
+.lock .time{position:relative;z-index:2;text-align:center;padding:96px 0 0;color:#fff}
+.lock .time .d{font-size:16px;font-weight:500;opacity:.78;letter-spacing:.01em}
+.lock .time .h{font-size:76px;font-weight:275;line-height:1.05;letter-spacing:-.02em;margin-top:2px}
+.lock .pushes{position:relative;z-index:2;margin-top:30px;padding:0 12px;display:flex;
+  flex-direction:column;gap:9px}
+.push-card{background:rgba(58,58,64,.62);backdrop-filter:blur(24px);border-radius:20px;
+  padding:12px 14px;color:#fff;cursor:pointer;box-shadow:0 8px 26px rgba(0,0,0,.4)}
+.push-card:active{transform:scale(.985)}
+.push-card .top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.push-card .app{width:22px;height:22px;border-radius:6px;overflow:hidden;flex:0 0 auto;background:#fff}
+.push-card .app img{width:100%;height:100%;display:block}
+.push-card .nm{font-size:12.5px;font-weight:500;opacity:.72;flex:1;text-transform:uppercase;
+  letter-spacing:.03em}
+.push-card .ago{font-size:12.5px;opacity:.6}
+.push-card h4{margin:0 0 3px;font-size:15px;font-weight:600;line-height:1.25}
+.push-card p{margin:0;font-size:15px;line-height:1.32;color:#eceaf2}
+.lock .foot{position:relative;z-index:2;margin-top:auto;padding:0 0 22px;text-align:center}
+.lock .foot .hint{font-size:13px;color:rgba(255,255,255,.55);margin-bottom:16px}
+.lock .foot .bar{width:138px;height:5px;border-radius:3px;background:rgba(255,255,255,.6);
+  margin:0 auto}
 
 /* тост */
 .toast{position:absolute;left:12px;right:12px;bottom:26px;z-index:80;background:rgba(28,28,30,.96);backdrop-filter:blur(14px);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:11px;font-size:15px;opacity:0;transform:translateY(14px);transition:.25s;pointer-events:none}
@@ -322,6 +350,7 @@ body{
     <li data-k="web">Вход в СберБизнес</li>
     <li data-k="consent">Подтверждение доступа</li>
     <li data-k="done">Помощник подключён</li>
+    <li data-k="push">Пуш и разбор ситуации</li>
   </ol>
   <button id="hintBtn" class="on">Подсказки: вкл</button>
   <button onclick="reset()">Начать сначала</button>
@@ -333,6 +362,30 @@ body{
     <span class="bars"><i></i><i></i><i></i><i></i></span>
     <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 10.2 5.6 7.8a3.4 3.4 0 0 1 4.8 0L8 10.2Z" fill="#fff"/><path d="M3.2 5.4a6.8 6.8 0 0 1 9.6 0" stroke="#fff" stroke-width="1.4" fill="none"/><path d="M1 3.2a10 10 0 0 1 14 0" stroke="#fff" stroke-width="1.4" fill="none"/></svg>
     <span class="batt"></span></span></div>
+
+  <!-- 0. ЭКРАН БЛОКИРОВКИ С ПУШЕМ -->
+  <section class="screen lock" id="sc-lock">
+    <div class="glow"></div>
+    <div class="time">
+      <div class="d">пятница, 22 августа</div>
+      <div class="h" id="lockClock">9:41</div>
+    </div>
+    <div class="pushes">
+      <div class="push-card tap" onclick="openFromPush()">
+        <div class="top">
+          <div class="app"><img src="" id="pushIcon" alt=""></div>
+          <div class="nm">Telegram</div>
+          <div class="ago">сейчас</div>
+        </div>
+        <h4>Бизнес-помощник</h4>
+        <p>Кладовщик Артур и продавец Семён 3 дня не могут договориться, кто разложит
+           товар на стеллаж…</p>
+      </div>
+    </div>
+    <div class="foot">
+      <div class="bar"></div>
+    </div>
+  </section>
 
   <!-- 1. ЧАТ ГРУППЫ -->
   <section class="screen" id="sc-chat">
@@ -489,7 +542,7 @@ body{
           <div class="l" style="margin-top:10px">ИНН / вход выполнен</div>
           <div class="v">7736512309 · Наталья Терехина</div>
         </div>
-        <div class="perm"><span class="ok">✓</span><span>Остаток и выписка по счетам<small>За выбранный период, только просмотр</small></span></div>
+        <div class="perm"><span class="ok">✓</span><span>Сроки и задачи компании<small>Налоги, отчёты и приёмки, только просмотр</small></span></div>
         <div class="perm"><span class="ok">✓</span><span>Статусы платежей и документов<small>Включая напоминания о налогах и отчётности</small></span></div>
         <div class="perm"><span class="ok">✓</span><span>Профиль компании и реквизиты<small>Чтобы формировать счета и ответы по вашим данным</small></span></div>
         <div class="perm"><span class="no">✕</span><span>Подписание и отправка платежей<small>Помощник этого не умеет и не получит доступ</small></span></div>
@@ -541,8 +594,8 @@ const msgs=[
  {w:'Артём Ковалёв',c:'g',t:'Касса на Мясницкой опять отвалилась от эквайринга в 8:40, минут двадцать не пробивали',tm:'09:10',q:{w:'Мария Соколова',t:'Приняла. По дрожжам вторая партия…'}},
  {w:'Кирилл Мещеряков',c:'c',t:'Заявку завёл, обещают до обеда починить',tm:'09:11'},
  {w:'Мария Соколова',c:'p',t:'И не забываем: до 25-го подаём уведомление по НДФЛ, иначе снова прилетит требование',tm:'09:14'},
- {w:'Павел Зотов',c:'r',t:'Кто это на себя берёт? Хочу видеть остаток по счёту и налоги в одном месте, а не собирать по людям',tm:'09:15'},
- {out:1,t:'Давайте подключим сюда Бизнес-помощника. Он покажет остаток, напомнит про налоги и ответит по документам прямо в чате',tm:'09:16'}
+ {w:'Павел Зотов',c:'r',t:'Кто это на себя берёт? Хочу видеть сроки и задачи в одном месте, а не собирать по людям',tm:'09:15'},
+ {out:1,t:'Давайте подключим сюда Бизнес-помощника. Он подскажет по срокам, напомнит про налоги и ответит по документам прямо в чате',tm:'09:16'}
 ];
 
 const state={botAdded:false,botPicked:false,step:1};
@@ -593,21 +646,36 @@ function renderContacts(){
   l.innerHTML=h;
 }
 renderFeed();renderMembers();renderContacts();
+document.getElementById('pushIcon').src=BOT;
 
 /* ---------- навигация ---------- */
-let cur='sc-chat';
+let cur='sc-chat', clockSaved='16:22';
+function syncClock(id){
+  const c=document.getElementById('clock');
+  if(id==='sc-lock'){ clockSaved=c.textContent||clockSaved; c.textContent=''; }
+  else if(!c.textContent){ c.textContent=clockSaved; }
+}
 function go(id,dir){
+  syncClock(id);
   const from=document.getElementById(cur);
   const to=document.getElementById(id);
-  if(from)from.classList.remove('active','in-r','in-l');
   to.classList.add('active',dir==='back'?'in-l':'in-r');
+  /* въезжающий экран поверх уходящего, а уходящий гасим уже после анимации:
+     если убрать его сразу, между экранами на кадр мелькает чёрный корпус */
+  to.style.zIndex='5';
+  if(from && from!==to){
+    setTimeout(function(){
+      if(cur!==from.id) from.classList.remove('active','in-r','in-l');
+      to.style.zIndex='';
+    },300);
+  }
   cur=id;markStep();
   to.querySelectorAll('.feed').forEach(f=>f.scrollTop=f.scrollHeight);
 }
 function markStep(){
-  const map={'sc-chat':state.botAdded?4:1,'sc-info':state.botAdded?4:2,'sc-add':3,'sc-card':5,'sc-botchat':state.authed?9:6,'sc-web':7,'sc-consent':8};
+  const map={'sc-lock':10,'sc-chat':state.botAdded?4:1,'sc-info':state.botAdded?4:2,'sc-add':3,'sc-card':5,'sc-botchat':state.authed?9:6,'sc-web':7,'sc-consent':8};
   const s=map[cur]||1;state.step=s;
-  document.getElementById('stepLabel').textContent='Шаг '+s+' из 9';
+  document.getElementById('stepLabel').textContent='Шаг '+s+' из 10';
   [...document.querySelectorAll('#steps li')].forEach((li,i)=>{
     li.className=i+1<s?'done':(i+1===s?'cur':'');
   });
@@ -676,7 +744,7 @@ function pressStart(){
   f.scrollTop=f.scrollHeight;
   setTimeout(()=>{
     f.insertAdjacentHTML('beforeend',`<div class="row"><div class="mini" style="background:#fff"><img src="${BOT}" style="width:100%;border-radius:50%"></div>
-      <div class="botbub">Здравствуйте! Я Бизнес-помощник СберБизнеса.<br><br>Показываю остаток и выписку, напоминаю о налогах и отчётах, отвечаю на вопросы по вашей компании прямо в Telegram.<br><br>Чтобы начать, войдите в СберБизнес: я привяжу вашу организацию.
+      <div class="botbub">Здравствуйте! Я Бизнес-помощник СберБизнеса.<br><br>Слежу за сроками по налогам и отчётам, подсказываю, где работа встала, отвечаю на вопросы по вашей компании прямо в Telegram.<br><br>Чтобы начать, войдите в СберБизнес: я привяжу вашу организацию.
       <div class="kbd"><div class="kbtn solid tap" onclick="go('sc-web')">Войти в СберБизнес</div><div class="kbtn">Что умеет помощник</div></div>
       <span class="t">16:23</span></div></div>`);
     f.scrollTop=f.scrollHeight;
@@ -706,16 +774,35 @@ function grant(){
   const f=document.getElementById('feedBot');
   f.insertAdjacentHTML('beforeend',`<div class="sysmsg">Бизнес-помощник подключён к ООО «Корка»</div>
     <div class="row"><div class="mini" style="background:#fff"><img src="${BOT}" style="width:100%;border-radius:50%"></div>
-    <div class="botbub">Готово, организация привязана.<br><br>Остаток на счёте: <b>1 284 300,50 ₽</b><br>Ближайшее: уведомление по НДФЛ до 25 августа.<br><br>Я уже в чате «Пекарня «Корка»». Позовите меня там через @SberBusinessAssistantBot, и я отвечу при всех.
-    <div class="kbd"><div class="kbtn">Выписка за неделю</div><div class="kbtn">Налоги и отчёты</div><div class="kbtn">Настроить напоминания</div></div>
+    <div class="botbub">Готово, организация привязана.<br><br>Ближайшее: уведомление по НДФЛ до 25 августа.<br><br>Я уже в чате «Пекарня «Корка»». Позовите меня там через @SberBusinessAssistantBot, и я отвечу при всех.
+    <div class="kbd"><div class="kbtn">Что горит на неделе</div><div class="kbtn">Налоги и отчёты</div><div class="kbtn">Настроить напоминания</div></div>
     <span class="t">16:29</span></div></div>`);
   f.scrollTop=f.scrollHeight;
   document.getElementById('clock').textContent='16:29';
 }
 
+/* ---------- пуш на экране блокировки ---------- */
+function openFromPush(){
+  /* пуш приходит уже подключённому помощнику: если демо начали с этого экрана,
+     доводим состояние до «организация привязана», а потом раскрываем сам разбор */
+  if(!state.authed) grant(); else go('sc-botchat');
+  document.getElementById('startBar').style.display='none';
+  document.getElementById('botCompose').style.display='flex';
+  if(!state.pushed){
+    state.pushed=true;
+    const f=document.getElementById('feedBot');
+    f.insertAdjacentHTML('beforeend',`<div class="row"><div class="mini" style="background:#fff"><img src="${BOT}" style="width:100%;border-radius:50%"></div>
+      <div class="botbub">Кладовщик Артур и продавец Семён третий день не могут договориться, кто разложит товар на стеллаж.<br><br>Меня трижды позвали в чате «Пекарня «Корка»» по одному и тому же вопросу, а приёмка от 19 августа так и висит незакрытой. Обычно это стоит около четырёх часов работы в неделю.
+      <div class="kbd"><div class="kbtn">Кто отвечает за приёмку</div><div class="kbtn">Написать обоим в чат</div><div class="kbtn">Не вмешиваться</div></div>
+      <span class="t">9:41</span></div></div>`);
+    f.scrollTop=f.scrollHeight;
+  }
+  document.getElementById('clock').textContent='9:41';
+}
+
 /* ---------- служебное ---------- */
 function reset(){
-  state.botAdded=false;state.botPicked=false;state.authed=false;
+  state.botAdded=false;state.botPicked=false;state.authed=false;state.pushed=false;
   renderFeed();renderMembers();resetAdd();
   document.getElementById('feedBot').innerHTML='';
   document.getElementById('startBar').style.display='block';
