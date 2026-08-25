@@ -107,6 +107,8 @@ body{
 /* поле ввода */
 .compose{position:relative;z-index:20;padding:6px 10px 26px;display:flex;align-items:center;gap:9px}
 .compose .field{flex:1;height:44px;border-radius:22px;background:var(--pill);backdrop-filter:blur(18px);display:flex;align-items:center;padding:0 14px;color:var(--txt2);font-size:16px;gap:10px}
+.sendbtn{width:44px;height:44px;border-radius:50%;background:var(--tg-blue);display:flex;
+  align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto}
 .compose .rnd{width:44px;height:44px;border-radius:50%;background:var(--pill);display:flex;align-items:center;justify-content:center;font-size:19px;color:#8A9099}
 
 /* профиль группы */
@@ -189,7 +191,8 @@ body{
 .hintpill{margin:0 auto 10px;width:max-content;background:rgba(255,255,255,.9);border-radius:14px;padding:6px 14px;font-size:14px;color:#4A5560;display:flex;gap:8px;align-items:center}
 .startbtn{height:52px;border-radius:26px;background:linear-gradient(90deg,#2b6ff0,#37a6f5);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:500;color:#fff;cursor:pointer}
 .botbub{background:#fff;box-shadow:0 1px 1px rgba(0,0,0,.07);border-radius:15px;padding:9px 12px;font-size:15.5px;line-height:1.35;max-width:100%}
-.botbub .kbd{margin-top:9px;display:flex;flex-direction:column;gap:6px}
+.msglink{color:var(--tg-link);cursor:pointer}
+.msglink:active{opacity:.6}
 .kbtn{background:#F0F4FA;border-radius:10px;padding:9px;text-align:center;font-size:15px;color:#2B6FF0;cursor:pointer}
 .kbtn.solid{background:#2b6ff0;color:#fff}
 
@@ -206,7 +209,10 @@ body{
 .lock .pushes{position:relative;z-index:2;margin-top:30px;padding:0 12px;display:flex;
   flex-direction:column;gap:9px}
 .push-card{background:rgba(255,255,255,.74);backdrop-filter:blur(24px);border-radius:20px;
-  padding:12px 14px;color:#101418;cursor:pointer;box-shadow:0 8px 26px rgba(40,60,90,.16)}
+  padding:12px 14px;color:#101418;cursor:pointer;box-shadow:0 8px 26px rgba(40,60,90,.16);
+  opacity:0;transform:translateY(26px) scale(.96);pointer-events:none;
+  transition:opacity .34s ease,transform .52s cubic-bezier(.17,.89,.32,1.28)}
+.push-card.in{opacity:1;transform:none;pointer-events:auto}
 .push-card:active{transform:scale(.985)}
 .push-card .top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
 .push-card .app{width:22px;height:22px;border-radius:6px;overflow:hidden;flex:0 0 auto;background:#fff}
@@ -222,7 +228,7 @@ body{
   margin:0 auto}
 
 /* тост */
-.toast{position:absolute;left:12px;right:12px;bottom:26px;z-index:80;background:rgba(28,28,30,.96);backdrop-filter:blur(14px);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:11px;font-size:15px;opacity:0;transform:translateY(14px);transition:.25s;pointer-events:none}
+.toast{position:absolute;left:12px;right:12px;bottom:26px;z-index:80;color:#fff;background:rgba(28,28,30,.96);backdrop-filter:blur(14px);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:11px;font-size:15px;opacity:0;transform:translateY(14px);transition:.25s;pointer-events:none}
 .toast.up{opacity:1;transform:none}
 .toast img{width:28px;height:28px;border-radius:50%}
 
@@ -351,14 +357,15 @@ body{
     <div class="feed" id="feedGroup"></div>
     <div class="compose" id="chatCompose">
       <div class="rnd"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M20 11.5 11.6 20a5 5 0 0 1-7-7l8.7-8.7a3.4 3.4 0 0 1 4.8 4.8l-8.6 8.6a1.8 1.8 0 0 1-2.5-2.5l7.9-7.9"/></svg></div>
-      <div class="field tap" id="chatField" onclick="typeKey()"><span style="flex:1" id="chatFieldText">Сообщение</span><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 3v9h9"/></svg></div>
-      <div class="rnd"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></div>
+      <div class="field" id="chatField" onclick="typeKey()"><span style="flex:1" id="chatFieldText">Сообщение</span><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 3v9h9"/></svg></div>
+      <div class="rnd" id="chatMic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></div>
+      <div class="sendbtn" id="chatSend" onclick="sendKey()" style="display:none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></div>
     </div>
     <div class="kb" id="kbChat" style="display:none">
       <div class="krow"><b>й</b><b>ц</b><b>у</b><b>к</b><b>е</b><b>н</b><b>г</b><b>ш</b><b>щ</b><b>з</b><b>х</b></div>
       <div class="krow"><b>ф</b><b>ы</b><b>в</b><b>а</b><b>п</b><b>р</b><b>о</b><b>л</b><b>д</b><b>ж</b><b>э</b></div>
       <div class="krow"><b class="wide">⇧</b><b>я</b><b>ч</b><b>с</b><b>м</b><b>и</b><b>т</b><b>ь</b><b>б</b><b>ю</b><b class="wide">⌫</b></div>
-      <div class="krow"><b class="wide">123</b><b>☺</b><b class="space">&nbsp;</b><b class="go tap" onclick="sendKey()"></b></div>
+      <div class="krow"><b class="wide">123</b><b>☺</b><b class="space">&nbsp;</b><b class="go">⏎</b></div>
     </div>
   </section>
 
@@ -511,8 +518,11 @@ function renderFeed(){
   if(state.insight){
     h+=bubbleHelper(`Напоминаю: сегодня с 12:00 до 15:00 приедет специалист по эквайрингу.
       Терминал у вас один, на это время он будет недоступен — держите наличные под рукой
-      и предупредите смену.
-      <div class="kbd"><div class="kbtn">Заказать второй терминал</div><div class="kbtn">Перенести визит</div></div>`,
+      и предупредите смену.<br><br>
+      Картой у вас платят четверо из пяти гостей, а обед — самый плотный час. Пока терминал
+      занят, часть чеков вы просто потеряете; то же самое случится, если он однажды откажет.
+      Второй терминал снимает оба риска и окупается за пару таких дней —
+      <span class="msglink">заказать второй терминал</span>.`,
       '16:23');
   }
   f.innerHTML=h;f.scrollTop=f.scrollHeight;
@@ -525,10 +535,13 @@ function bubbleHelper(text, time){
 }
 
 /* ---------- ключ авторизации прямо в чате ---------- */
-const KEY='СБ-7К4М-92XD';
+const KEY='SB-7K4M-92XD';
 function typeKey(){
-  if(state.keyed)return;
+  /* ключ просят после того, как помощник добавлен и представился: раньше поле обычное */
+  if(state.keyed || !state.botAdded)return;
   document.getElementById('kbChat').style.display='block';
+  document.getElementById('chatMic').style.display='none';
+  document.getElementById('chatSend').style.display='flex';
   const sp=document.getElementById('chatFieldText');
   sp.style.color='var(--txt)';
   let i=0;
@@ -539,10 +552,12 @@ function typeKey(){
 }
 function sendKey(){
   const sp=document.getElementById('chatFieldText');
-  if(state.keyed || !sp.textContent.startsWith('СБ'))return;
+  if(state.keyed || sp.textContent.trim()!==KEY)return;
   state.keyed=true;
   sp.textContent='Сообщение';sp.style.color='';
   document.getElementById('kbChat').style.display='none';
+  document.getElementById('chatSend').style.display='none';
+  document.getElementById('chatMic').style.display='flex';
   renderFeed();
   /* ответ приходит не мгновенно: помощник «проверяет» ключ */
   setTimeout(()=>{ state.insight=true;renderFeed();markStep(); },1500);
@@ -580,14 +595,22 @@ renderFeed();renderMembers();renderContacts();
 document.getElementById('pushIcon').src=BOT;
 
 /* ---------- навигация ---------- */
-let cur='sc-chat', clockSaved='16:22';
+let cur='sc-chat', clockSaved='16:22', pushTimer=null;
+/* на экране блокировки уведомление прилетает через паузу, как на настоящем телефоне */
+function armPush(id){
+  const c=document.querySelector('.push-card');
+  clearTimeout(pushTimer);
+  if(id!=='sc-lock'){ c.classList.remove('in'); return; }
+  c.classList.remove('in');
+  pushTimer=setTimeout(function(){ c.classList.add('in'); },1300);
+}
 function syncClock(id){
   const c=document.getElementById('clock');
   if(id==='sc-lock'){ clockSaved=c.textContent||clockSaved; c.textContent=''; }
   else if(!c.textContent){ c.textContent=clockSaved; }
 }
 function go(id,dir){
-  syncClock(id);
+  syncClock(id);armPush(id);
   const from=document.getElementById(cur);
   const to=document.getElementById(id);
   to.classList.add('active',dir==='back'?'in-l':'in-r');
@@ -603,7 +626,15 @@ function go(id,dir){
   cur=id;markStep();
   to.querySelectorAll('.feed').forEach(f=>f.scrollTop=f.scrollHeight);
 }
+function refreshHints(){
+  /* пульсирующая точка всегда стоит там, где следующий шаг сценария */
+  const title=document.querySelector('#sc-chat .cap.title');
+  const field=document.getElementById('chatField');
+  title.classList.toggle('tap', !state.botAdded);
+  field.classList.toggle('tap', state.botAdded && !state.keyed);
+}
 function markStep(){
+  refreshHints();
   const map={'sc-lock':9,'sc-card':8,'sc-add':3,
     'sc-info':state.botAdded?4:2,
     'sc-botchat':9,
@@ -680,7 +711,8 @@ function openFromPush(){
     const f=document.getElementById('feedBot');
     f.insertAdjacentHTML('beforeend',`<div class="row"><div class="mini" style="background:#fff"><img src="${BOT}" style="width:100%;border-radius:50%"></div>
       <div class="botbub">Кладовщик Артур и продавец Семён третий день не могут договориться, кто разложит товар на стеллаж.<br><br>Меня трижды позвали в чате «Пекарня «Корка»» по одному и тому же вопросу, а приёмка от 19 августа так и висит незакрытой. Обычно это стоит около четырёх часов работы в неделю.
-      <div class="kbd"><div class="kbtn">Кто отвечает за приёмку</div><div class="kbtn">Написать обоим в чат</div><div class="kbtn">Не вмешиваться</div></div>
+<br><br>Могу <span class="msglink">написать обоим в чате</span> и предложить,
+      кто закрывает приёмку сегодня, а кто — в следующую поставку.
       <span class="t">9:41</span></div></div>`);
     f.scrollTop=f.scrollHeight;
   }
@@ -693,6 +725,8 @@ function reset(){
   renderFeed();renderMembers();resetAdd();
   document.getElementById('feedBot').innerHTML='';
   document.getElementById('kbChat').style.display='none';
+  document.getElementById('chatSend').style.display='none';
+  document.getElementById('chatMic').style.display='flex';
   const cf=document.getElementById('chatFieldText');cf.textContent='Сообщение';cf.style.color='';
   document.getElementById('clock').textContent='16:22';
   go('sc-chat','back');
